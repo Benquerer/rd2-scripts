@@ -1,28 +1,28 @@
-# Lab 03 - Multi-area OSPFv2 - Grupo 01
+# Lab 03 - Multi-area OSPFv2 - Grupo 03 (Físico)
 
-## Tabela de Endereçamento
+## Tabela de Endereçamento (Físico)
 
 | Device | Interface | Endereço IP     | Máscara | Área OSPF |
 | ------ | --------- | --------------- | ------- | --------- |
-| R1     | G0/0      | 172.16.0.2      | /30     | Area 0    |
-| R1     | G0/1      | 10.10.0.1       | /30     | Area 1    |
+| R1     | G0/0      | 172.16.30.2     | /30     | Area 0    |
+| R1     | G0/1      | 10.10.30.1      | /30     | Area 1    |
 | R2     | Lo0       | 209.165.200.225 | /27     | Area 0    |
-| R2     | G0/0      | 172.16.0.1      | /30     | Area 0    |
-| R2     | G0/1      | 172.16.1.1      | /30     | Area 0    |
-| R3     | G0/0      | 172.16.1.2      | /30     | Area 0    |
-| R3     | G0/1      | 10.10.4.1       | /30     | Area 2    |
-| D1     | G1/0/11   | 10.10.0.2       | /30     | Area 1    |
-| D1     | G1/0/23   | 10.10.1.1       | /24     | Area 1    |
-| D2     | G1/0/11   | 10.10.4.2       | /30     | Area 2    |
-| D2     | G1/0/23   | 10.10.5.1       | /24     | Area 2    |
-| PC1    | NIC       | 10.10.1.10      | /24     | —         |
-| PC3    | NIC       | 10.10.5.10      | /24     | —         |
+| R2     | G0/0      | 172.16.30.1     | /30     | Area 0    |
+| R2     | G0/1      | 172.16.31.1     | /30     | Area 0    |
+| R3     | G0/0      | 172.16.31.2     | /30     | Area 0    |
+| R3     | G0/1      | 10.10.34.1      | /30     | Area 2    |
+| D1     | G1/0/11   | 10.10.30.2      | /30     | Area 1    |
+| D1     | G1/0/23   | 10.10.31.1      | /24     | Area 1    |
+| D2     | G1/0/11   | 10.10.34.2      | /30     | Area 2    |
+| D2     | G1/0/23   | 10.10.35.1      | /24     | Area 2    |
+| PC1    | NIC       | 10.10.31.10     | /24     | —         |
+| PC3    | NIC       | 10.10.35.10     | /24     | —         |
 
 #### Roles OSPF:
 
-> **ABR** (Area Border Router): R1, R3 — ligam áreas regulares à Area 0  
-> **ASBR** (Autonomous System Boundary Router): R2 — liga à rede externa (Internet)  
-> **Internal routers**: R2 (Area 0), D1 (Area 1), D2 (Area 2)  
+> **ABR** (Area Border Router): R1, R3 — ligam áreas regulares à Area 0
+> **ASBR** (Autonomous System Boundary Router): R2 — liga à rede externa (Internet)
+> **Internal routers**: R2 (Area 0), D1 (Area 1), D2 (Area 2)
 > **Backbone routers**: R1, R2, R3 — todos têm interfaces na Area 0
 
 ---
@@ -50,12 +50,12 @@ line vty 0 15
 service password-encryption
 int g0/0
  description R1 - Area 0 p/ R2
- ip address 172.16.0.2 255.255.255.252
+ ip address 172.16.30.2 255.255.255.252
  no shutdown
  exit
 int g0/1
  description R1 - Area 1 p/ D1
- ip address 10.10.0.1 255.255.255.252
+ ip address 10.10.30.1 255.255.255.252
  no shutdown
  exit
 end
@@ -64,8 +64,8 @@ conf t
 router ospf 123
 router-id 1.1.1.1
 auto-cost reference-bandwidth 1000
-network 172.16.0.0 0.0.0.3 area 0
-network 10.10.0.0 0.0.0.3 area 1
+network 172.16.30.0 0.0.0.3 area 0
+network 10.10.30.0 0.0.0.3 area 1
 area 1 stub
 end
 show ip ospf neighbor
@@ -95,12 +95,12 @@ line vty 0 15
 service password-encryption
 int g0/0
  description R2 - Area 0 p/ R1
- ip address 172.16.0.1 255.255.255.252
+ ip address 172.16.30.1 255.255.255.252
  no shutdown
  exit
 int g0/1
  description R2 - Area 0 p/ R3
- ip address 172.16.1.1 255.255.255.252
+ ip address 172.16.31.1 255.255.255.252
  no shutdown
  exit
 int Loopback0
@@ -114,9 +114,12 @@ conf t
 router ospf 123
 router-id 2.2.2.1
 auto-cost reference-bandwidth 1000
-network 172.16.0.0 0.0.0.3 area 0
-network 172.16.1.0 0.0.0.3 area 0
+network 172.16.30.0 0.0.0.3 area 0
+network 172.16.31.0 0.0.0.3 area 0
+! Loopback a simular Internet - retirar se ligar a outro grupo
 network 209.165.200.224 0.0.0.31 area 0
+! Retirar se nao houver rota default real (ligacao a outro grupo)
+default-information originate always
 end
 show ip ospf neighbor
 copy running-config startup-config
@@ -145,12 +148,12 @@ line vty 0 15
 service password-encryption
 int g0/0
  description R3 - Area 0 p/ R2
- ip address 172.16.1.2 255.255.255.252
+ ip address 172.16.31.2 255.255.255.252
  no shutdown
  exit
 int g0/1
  description R3 - Area 2 p/ D2
- ip address 10.10.4.1 255.255.255.252
+ ip address 10.10.34.1 255.255.255.252
  no shutdown
  exit
 end
@@ -159,8 +162,8 @@ conf t
 router ospf 123
 router-id 3.3.3.1
 auto-cost reference-bandwidth 1000
-network 172.16.1.0 0.0.0.3 area 0
-network 10.10.4.0 0.0.0.3 area 2
+network 172.16.31.0 0.0.0.3 area 0
+network 10.10.34.0 0.0.0.3 area 2
 area 2 stub no-summary
 end
 show ip ospf neighbor
@@ -192,13 +195,13 @@ ip routing
 int g1/0/11
  description D1 - Area 1 p/ R1
  no switchport
- ip address 10.10.0.2 255.255.255.252
+ ip address 10.10.30.2 255.255.255.252
  no shutdown
  exit
 int g1/0/23
  description D1 - LAN Area 1 p/ PC1
  no switchport
- ip address 10.10.1.1 255.255.255.0
+ ip address 10.10.31.1 255.255.255.0
  no shutdown
  exit
 end
@@ -207,8 +210,8 @@ conf t
 router ospf 123
 router-id 1.1.1.2
 auto-cost reference-bandwidth 1000
-network 10.10.0.0 0.0.0.3 area 1
-network 10.10.1.0 0.0.0.255 area 1
+network 10.10.30.0 0.0.0.3 area 1
+network 10.10.31.0 0.0.0.255 area 1
 area 1 stub
 end
 show ip protocols
@@ -241,13 +244,13 @@ ip routing
 int g1/0/11
  description D2 - Area 2 p/ R3
  no switchport
- ip address 10.10.4.2 255.255.255.252
+ ip address 10.10.34.2 255.255.255.252
  no shutdown
  exit
 int g1/0/23
  description D2 - LAN Area 2 p/ PC3
  no switchport
- ip address 10.10.5.1 255.255.255.0
+ ip address 10.10.35.1 255.255.255.0
  no shutdown
  exit
 end
@@ -256,8 +259,8 @@ conf t
 router ospf 123
 router-id 3.3.3.2
 auto-cost reference-bandwidth 1000
-network 10.10.4.0 0.0.0.3 area 2
-network 10.10.5.0 0.0.0.255 area 2
+network 10.10.34.0 0.0.0.3 area 2
+network 10.10.35.0 0.0.0.255 area 2
 area 2 stub
 end
 show ip protocols
@@ -270,13 +273,13 @@ copy running-config startup-config
 ### PC1
 
 ```
-IP: 10.10.1.10/24
-Gateway: 10.10.1.1
+IP: 10.10.31.10/24
+Gateway: 10.10.31.1
 ```
 
 ### PC3
 
 ```
-IP: 10.10.5.10/24
-Gateway: 10.10.5.1
+IP: 10.10.35.10/24
+Gateway: 10.10.35.1
 ```
