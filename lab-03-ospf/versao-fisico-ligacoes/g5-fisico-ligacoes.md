@@ -12,7 +12,7 @@
 | R2     | G0/2      | 10.0.0.5        | /28     | Area 0    |
 | R3     | G0/0      | 172.16.51.2     | /30     | Area 0    |
 | R3     | G0/1      | 10.10.54.1      | /30     | Area 2    |
-| D1     | G1/0/11   | 10.10.50.2      | /30     | Area 1    |
+| D1     | G1/0/5    | 10.10.50.2      | /30     | Area 1    |
 | D1     | G1/0/23   | 10.10.51.1      | /24     | Area 1    |
 | D2     | G1/0/11   | 10.10.54.2      | /30     | Area 2    |
 | D2     | G1/0/23   | 10.10.55.1      | /24     | Area 2    |
@@ -224,7 +224,7 @@ line vty 0 15
  exit
 service password-encryption
 ip routing
-int g1/0/11
+int g1/0/5
  description D1 - Area 1 p/ R1
  no switchport
  ip address 10.10.50.2 255.255.255.252
