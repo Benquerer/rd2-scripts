@@ -238,6 +238,7 @@ int g1/0/23
  exit
 end
 show ip interface brief
+
 conf t
 router ospf 123
 router-id 2.1.1.2
@@ -287,6 +288,7 @@ int g1/0/23
  exit
 end
 show ip interface brief
+
 conf t
 router ospf 123
 router-id 2.3.3.2

@@ -84,9 +84,6 @@ int g0/1
  ip address 10.10.50.1 255.255.255.252
  no shutdown
  exit
-end
-show ip interface brief
-conf t
 router ospf 123
 router-id 5.1.1.1
 auto-cost reference-bandwidth 1000
@@ -94,7 +91,11 @@ network 172.16.50.0 0.0.0.3 area 0
 network 10.10.50.0 0.0.0.3 area 1
 area 1 stub
 end
+
+show ip interface brief
+
 show ip ospf neighbor
+
 copy running-config startup-config
 ```
 
@@ -139,21 +140,20 @@ int Loopback0
  ip address 209.165.200.225 255.255.255.224
  no shutdown
  exit
-end
-show ip interface brief
-conf t
 router ospf 123
 router-id 5.2.2.1
 auto-cost reference-bandwidth 1000
 network 172.16.50.0 0.0.0.3 area 0
 network 172.16.51.0 0.0.0.3 area 0
 network 10.0.0.0 0.0.0.15 area 0
-! Loopback a simular Internet - retirar se ligar a outro grupo
 network 209.165.200.224 0.0.0.31 area 0
-! Retirar se nao houver rota default real (ligacao a outro grupo)
 default-information originate always
 end
+
+show ip interface brief
+
 show ip ospf neighbor
+
 copy running-config startup-config
 ```
 
@@ -188,9 +188,6 @@ int g0/1
  ip address 10.10.54.1 255.255.255.252
  no shutdown
  exit
-end
-show ip interface brief
-conf t
 router ospf 123
 router-id 5.3.3.1
 auto-cost reference-bandwidth 1000
@@ -198,7 +195,11 @@ network 172.16.51.0 0.0.0.3 area 0
 network 10.10.54.0 0.0.0.3 area 2
 area 2 stub no-summary
 end
+
+show ip interface brief
+
 show ip ospf neighbor
+
 copy running-config startup-config
 ```
 
@@ -236,9 +237,6 @@ int g1/0/23
  ip address 10.10.51.1 255.255.255.0
  no shutdown
  exit
-end
-show ip interface brief
-conf t
 router ospf 123
 router-id 5.1.1.2
 auto-cost reference-bandwidth 1000
@@ -246,8 +244,11 @@ network 10.10.50.0 0.0.0.3 area 1
 network 10.10.51.0 0.0.0.255 area 1
 area 1 stub
 end
-show ip protocols
-show ip ospf interface brief
+
+show ip interface brief
+
+show ip ospf neighbor
+
 copy running-config startup-config
 ```
 
@@ -285,9 +286,6 @@ int g1/0/23
  ip address 10.10.55.1 255.255.255.0
  no shutdown
  exit
-end
-show ip interface brief
-conf t
 router ospf 123
 router-id 5.3.3.2
 auto-cost reference-bandwidth 1000
@@ -295,8 +293,11 @@ network 10.10.54.0 0.0.0.3 area 2
 network 10.10.55.0 0.0.0.255 area 2
 area 2 stub
 end
-show ip protocols
-show ip ospf interface brief
+
+show ip interface brief
+
+show ip ospf neighbor
+
 copy running-config startup-config
 ```
 
