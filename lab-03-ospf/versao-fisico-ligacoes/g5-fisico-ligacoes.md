@@ -147,7 +147,6 @@ network 172.16.50.0 0.0.0.3 area 0
 network 172.16.51.0 0.0.0.3 area 0
 network 10.0.0.0 0.0.0.15 area 0
 network 209.165.200.224 0.0.0.31 area 0
-default-information originate always
 end
 
 show ip interface brief
