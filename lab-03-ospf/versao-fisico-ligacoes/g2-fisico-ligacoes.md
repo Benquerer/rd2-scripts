@@ -12,10 +12,10 @@
 | R2     | G0/2      | 10.0.0.2        | /28     | Area 0    |
 | R3     | G0/0      | 172.16.21.2     | /30     | Area 0    |
 | R3     | G0/1      | 10.10.24.1      | /30     | Area 2    |
-| D1     | G1/0/5    | 10.10.20.2      | /30     | Area 1    |
-| D1     | G1/0/23   | 10.10.21.1      | /24     | Area 1    |
-| D2     | G1/0/11   | 10.10.24.2      | /30     | Area 2    |
-| D2     | G1/0/23   | 10.10.25.1      | /24     | Area 2    |
+| D1     | Fa0/5     | 10.10.20.2      | /30     | Area 1    |
+| D1     | Fa0/23    | 10.10.21.1      | /24     | Area 1    |
+| D2     | Fa0/11    | 10.10.24.2      | /30     | Area 2    |
+| D2     | Fa0/23    | 10.10.25.1      | /24     | Area 2    |
 | PC1    | NIC       | 10.10.21.10     | /24     | —         |
 | PC3    | NIC       | 10.10.25.10     | /24     | —         |
 
@@ -224,13 +224,13 @@ line vty 0 15
  exit
 service password-encryption
 ip routing
-int g1/0/5
+int Fa0/5
  description D1 - Area 1 p/ R1
  no switchport
  ip address 10.10.20.2 255.255.255.252
  no shutdown
  exit
-int g1/0/23
+int Fa0/23
  description D1 - LAN Area 1 p/ PC1
  no switchport
  ip address 10.10.21.1 255.255.255.0
@@ -273,13 +273,13 @@ line vty 0 15
  exit
 service password-encryption
 ip routing
-int g1/0/11
+int Fa0/11
  description D2 - Area 2 p/ R3
  no switchport
  ip address 10.10.24.2 255.255.255.252
  no shutdown
  exit
-int g1/0/23
+int Fa0/23
  description D2 - LAN Area 2 p/ PC3
  no switchport
  ip address 10.10.25.1 255.255.255.0
