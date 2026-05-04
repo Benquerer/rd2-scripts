@@ -279,7 +279,7 @@ int Fa0/11
  ip address 10.10.34.2 255.255.255.252
  no shutdown
  exit
-int g1/0/23
+int Fa0/23
  description D2 - LAN Area 2 p/ PC3
  no switchport
  ip address 10.10.35.1 255.255.255.0
