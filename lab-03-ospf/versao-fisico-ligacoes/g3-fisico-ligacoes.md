@@ -2,19 +2,19 @@
 
 ## Tabela de Endereçamento (Físico)
 
-| Device | Interface | Endereço IP     | Máscara | Área OSPF |
-| ------ | --------- | --------------- | ------- | --------- |
-| R1     | G0/0      | 172.16.30.2     | /30     | Area 31 |
-| R1     | G0/1      | 10.10.30.1   | /30     | Area 31 |
-| R2     | G0/0      | 172.16.30.1     | /30     | Area 31 |
-| R2     | G0/1      | 172.16.31.1     | /30     | Area 32 |
-| R2     | G0/2      | 10.0.0.3        | /28     | Area 0    |
-| R3     | G0/0      | 172.16.31.2     | /30     | Area 32 |
-| R3     | G0/1      | 10.10.34.1  | /24     | Area 32 |
-| D1     | Fa0/5     | 10.10.30.2   | /30     | Area 31 |
-| D1     | Fa0/23    | 10.10.31.1 | /24   | Area 31 |
-| D2     | —         | —               | —       | L2 only   |
-| PC0    | NIC       | 10.10.31.10 | /24  | —         |
+| Device | Interface | Endereço IP | Máscara | Área OSPF |
+| ------ | --------- | ----------- | ------- | --------- |
+| R1     | G0/0      | 172.16.30.2 | /30     | Area 31   |
+| R1     | G0/1      | 10.10.30.1  | /30     | Area 31   |
+| R2     | G0/0      | 172.16.30.1 | /30     | Area 31   |
+| R2     | G0/1      | 172.16.31.1 | /30     | Area 32   |
+| R2     | G0/2      | 10.0.0.3    | /28     | Area 0    |
+| R3     | G0/0      | 172.16.31.2 | /30     | Area 32   |
+| R3     | G0/1      | 10.10.34.1  | /24     | Area 32   |
+| D1     | Fa0/5     | 10.10.30.2  | /30     | Area 31   |
+| D1     | Fa0/23    | 10.10.31.1  | /24     | Area 31   |
+| D2     | —         | —           | —       | L2 only   |
+| PC0    | NIC       | 10.10.31.10 | /24     | —         |
 | PC1    | NIC       | 10.10.34.10 | /24     | —         |
 
 ## Tabela de Backbone Inter-grupos
@@ -46,6 +46,7 @@
 #### Nota — Router-IDs únicos por grupo:
 
 > Para evitar conflitos de router-ID no domínio OSPF partilhado, seguimos a seguinte lógica:
+>
 > - **1º octeto** — número do grupo (1-6)
 > - **2º octeto** — número do router (R1=1, R2=2, R3=3)
 > - **3º octeto** — igual ao 2º (preenchimento)
