@@ -2,22 +2,20 @@
 
 ## Tabela de Endereçamento (Físico)
 
-| Device | Interface | Endereço IP     | Máscara | Área OSPF |
-| ------ | --------- | --------------- | ------- | --------- |
-| R1     | G0/0      | 172.16.10.2     | /30     | Area 0    |
-| R1     | G0/1      | 10.10.10.1      | /30     | Area 1    |
-| R2     | Lo0       | 209.165.200.225 | /27     | Area 0    |
-| R2     | G0/0      | 172.16.10.1     | /30     | Area 0    |
-| R2     | G0/1      | 172.16.11.1     | /30     | Area 0    |
-| R2     | G0/2      | 10.0.0.1        | /28     | Area 0    |
-| R3     | G0/0      | 172.16.11.2     | /30     | Area 0    |
-| R3     | G0/1      | 10.10.14.1      | /30     | Area 2    |
-| D1     | Fa0/5     | 10.10.10.2      | /30     | Area 1    |
-| D1     | Fa0/23    | 10.10.11.1      | /24     | Area 1    |
-| D2     | Fa0/11    | 10.10.14.2      | /30     | Area 2    |
-| D2     | Fa0/23    | 10.10.15.1      | /24     | Area 2    |
-| PC1    | NIC       | 10.10.11.10     | /24     | —         |
-| PC3    | NIC       | 10.10.15.10     | /24     | —         |
+| Device | Interface | Endereço IP | Máscara | Área OSPF |
+| ------ | --------- | ----------- | ------- | --------- |
+| R1     | G0/0      | 172.16.10.2 | /30     | Area 11   |
+| R1     | G0/1      | 10.10.10.1  | /30     | Area 11   |
+| R2     | G0/0      | 172.16.10.1 | /30     | Area 11   |
+| R2     | G0/1      | 172.16.11.1 | /30     | Area 12   |
+| R2     | G0/2      | 10.0.0.1    | /28     | Area 0    |
+| R3     | G0/0      | 172.16.11.2 | /30     | Area 12   |
+| R3     | G0/1      | 10.10.14.1  | /24     | Area 12   |
+| D1     | Fa0/5     | 10.10.10.2  | /30     | Area 11   |
+| D1     | Fa0/23    | 10.10.11.1  | /24     | Area 11   |
+| D2     | —         | —           | —       | L2 only   |
+| PC0    | NIC       | 10.10.11.10 | /24     | —         |
+| PC1    | NIC       | 10.10.14.10 | /24     | —         |
 
 ## Tabela de Backbone Inter-grupos
 
@@ -34,14 +32,25 @@
 
 #### Roles OSPF:
 
-> **ABR** (Area Border Router): R1, R3 — ligam áreas regulares à Area 0
-> **ASBR** (Autonomous System Boundary Router): R2 — liga à rede externa (Internet)
-> **Internal routers**: R2 (Area 0), D1 (Area 1), D2 (Area 2)
-> **Backbone routers**: R1, R2, R3 — todos têm interfaces na Area 0
+> **ABR**: R2 — liga Area 0 às Areas 11 e 12
+> **Internal routers Area 11**: R1, D1
+> **Internal routers Area 12**: R3
+> **Switch L2**: D2 — transparente, sem IP, sem OSPF
+
+#### Nota — Áreas por grupo:
+
+> Cada grupo usa 2 áreas: X1 (stub) e X2 (totally stub), onde X é o número do grupo.
+> A Area 0 é partilhada por todos os grupos via switch L2 central (10.0.0.0/28).
+> Total: 12 áreas de grupo + Area 0.
 
 #### Nota — Router-IDs únicos por grupo:
 
-> Num domínio OSPF multi-grupo, todos os routers partilham o mesmo processo OSPF (123) e a mesma Area 0 via backbone 10.0.0.0/28. Para evitar conflitos de router-ID, o primeiro octeto identifica o grupo (1-6). Exemplo: R2 do grupo 1 = 1.2.2.1, R2 do grupo 2 = 2.2.2.1, etc.
+> Para evitar conflitos de router-ID no domínio OSPF partilhado, seguimos a seguinte lógica:
+>
+> - **1º octeto** — número do grupo (1-6)
+> - **2º octeto** — número do router (R1=1, R2=2, R3=3)
+> - **3º octeto** — igual ao 2º (preenchimento)
+> - **4º octeto** — 1 para routers, 2 para switches L3 (D1)
 
 | Router | Router-ID |
 | ------ | --------- |
@@ -49,7 +58,6 @@
 | R2     | 1.2.2.1   |
 | R3     | 1.3.3.1   |
 | D1     | 1.1.1.2   |
-| D2     | 1.3.3.2   |
 
 ---
 
@@ -75,21 +83,21 @@ line vty 0 15
  exit
 service password-encryption
 int g0/0
- description R1 - Area 0 p/ R2
+ description R1 - Area 11 p/ R2
  ip address 172.16.10.2 255.255.255.252
  no shutdown
  exit
 int g0/1
- description R1 - Area 1 p/ D1
+ description R1 - Area 11 p/ D1
  ip address 10.10.10.1 255.255.255.252
  no shutdown
  exit
 router ospf 123
 router-id 1.1.1.1
 auto-cost reference-bandwidth 1000
-network 172.16.10.0 0.0.0.3 area 0
-network 10.10.10.0 0.0.0.3 area 1
-area 1 stub
+network 172.16.10.0 0.0.0.3 area 11
+network 10.10.10.0 0.0.0.3 area 11
+area 11 stub
 end
 
 show ip interface brief
@@ -121,12 +129,12 @@ line vty 0 15
  exit
 service password-encryption
 int g0/0
- description R2 - Area 0 p/ R1
+ description R2 - Area 11 p/ R1
  ip address 172.16.10.1 255.255.255.252
  no shutdown
  exit
 int g0/1
- description R2 - Area 0 p/ R3
+ description R2 - Area 12 p/ R3
  ip address 172.16.11.1 255.255.255.252
  no shutdown
  exit
@@ -135,18 +143,14 @@ int g0/2
  ip address 10.0.0.1 255.255.255.240
  no shutdown
  exit
-int Loopback0
- description R2 - Internet
- ip address 209.165.200.225 255.255.255.224
- no shutdown
- exit
 router ospf 123
 router-id 1.2.2.1
 auto-cost reference-bandwidth 1000
-network 172.16.10.0 0.0.0.3 area 0
-network 172.16.11.0 0.0.0.3 area 0
+network 172.16.10.0 0.0.0.3 area 11
+network 172.16.11.0 0.0.0.3 area 12
 network 10.0.0.0 0.0.0.15 area 0
-network 209.165.200.224 0.0.0.31 area 0
+area 11 stub
+area 12 stub no-summary
 end
 
 show ip interface brief
@@ -178,21 +182,21 @@ line vty 0 15
  exit
 service password-encryption
 int g0/0
- description R3 - Area 0 p/ R2
+ description R3 - Area 12 p/ R2
  ip address 172.16.11.2 255.255.255.252
  no shutdown
  exit
 int g0/1
- description R3 - Area 2 p/ D2
- ip address 10.10.14.1 255.255.255.252
+ description R3 - Area 12 p/ D2/PC1
+ ip address 10.10.14.1 255.255.255.0
  no shutdown
  exit
 router ospf 123
 router-id 1.3.3.1
 auto-cost reference-bandwidth 1000
-network 172.16.11.0 0.0.0.3 area 0
-network 10.10.14.0 0.0.0.3 area 2
-area 2 stub no-summary
+network 172.16.11.0 0.0.0.3 area 12
+network 10.10.14.0 0.0.0.255 area 12
+area 12 stub
 end
 
 show ip interface brief
@@ -225,13 +229,13 @@ line vty 0 15
 service password-encryption
 ip routing
 int Fa0/5
- description D1 - Area 1 p/ R1
+ description D1 - Area 11 p/ R1
  no switchport
  ip address 10.10.10.2 255.255.255.252
  no shutdown
  exit
 int Fa0/23
- description D1 - LAN Area 1 p/ PC1
+ description D1 - LAN Area 11 p/ PC0
  no switchport
  ip address 10.10.11.1 255.255.255.0
  no shutdown
@@ -239,9 +243,9 @@ int Fa0/23
 router ospf 123
 router-id 1.1.1.2
 auto-cost reference-bandwidth 1000
-network 10.10.10.0 0.0.0.3 area 1
-network 10.10.11.0 0.0.0.255 area 1
-area 1 stub
+network 10.10.10.0 0.0.0.3 area 11
+network 10.10.11.0 0.0.0.255 area 11
+area 11 stub
 end
 
 show ip interface brief
@@ -272,46 +276,23 @@ line vty 0 15
  login
  exit
 service password-encryption
-ip routing
-int Fa0/11
- description D2 - Area 2 p/ R3
- no switchport
- ip address 10.10.14.2 255.255.255.252
- no shutdown
- exit
-int Fa0/23
- description D2 - LAN Area 2 p/ PC3
- no switchport
- ip address 10.10.15.1 255.255.255.0
- no shutdown
- exit
-router ospf 123
-router-id 1.3.3.2
-auto-cost reference-bandwidth 1000
-network 10.10.14.0 0.0.0.3 area 2
-network 10.10.15.0 0.0.0.255 area 2
-area 2 stub
 end
-
-show ip interface brief
-
-show ip ospf neighbor
 
 copy running-config startup-config
 ```
 
 ---
 
-### PC1
+### PC0
 
 ```
 IP: 10.10.11.10/24
 Gateway: 10.10.11.1
 ```
 
-### PC3
+### PC1
 
 ```
-IP: 10.10.15.10/24
-Gateway: 10.10.15.1
+IP: 10.10.14.10/24
+Gateway: 10.10.14.1
 ```
