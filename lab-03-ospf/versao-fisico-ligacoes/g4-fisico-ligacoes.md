@@ -11,11 +11,11 @@
 | R2     | G0/2      | 10.0.0.4    | /28     | Area 0    |
 | R3     | G0/0      | 172.16.41.2 | /30     | Area 42   |
 | R3     | G0/1      | 10.10.44.1  | /24     | Area 42   |
-| D1     | Fa0/5     | 10.10.40.2  | /30     | Area 41   |
-| D1     | Fa0/23    | 10.10.41.1  | /24     | Area 41   |
-| D2     | —         | —           | —       | L2 only   |
+| D1     | —         | —           | —       | L2 only   |
+| D2     | Fa0/11    | 10.10.44.2  | /30     | Area 42   |
+| D2     | Fa0/23    | 10.10.45.1  | /24     | Area 42   |
 | PC0    | NIC       | 10.10.41.10 | /24     | —         |
-| PC1    | NIC       | 10.10.44.10 | /24     | —         |
+| PC1    | NIC       | 10.10.45.10 | /24     | —         |
 
 ## Tabela de Backbone Inter-grupos
 
@@ -33,15 +33,16 @@
 #### Roles OSPF:
 
 > **ABR**: R2 — liga Area 0 às Areas 41 e 42
-> **Internal routers Area 41**: R1, D1
-> **Internal routers Area 42**: R3
-> **Switch L2**: D2 — transparente, sem IP, sem OSPF
+> **Internal routers Area 41**: R1
+> **Internal routers Area 42**: R3, D2
+> **Switch L2**: D1 — transparente, sem IP, sem OSPF (grupos pares)
 
 #### Nota — Áreas por grupo:
 
 > Cada grupo usa 2 áreas: X1 (stub) e X2 (totally stub), onde X é o número do grupo.
 > A Area 0 é partilhada por todos os grupos via switch L2 central (10.0.0.0/28).
 > Total: 12 áreas de grupo + Area 0.
+> Nota: Para grupos pares (2, 4, 6) o D1 é o switch L2 (Area X1) e o D2 é o switch L3 (Area X2).
 
 #### Nota — Router-IDs únicos por grupo:
 
@@ -50,14 +51,14 @@
 > - **1º octeto** — número do grupo (1-6)
 > - **2º octeto** — número do router (R1=1, R2=2, R3=3)
 > - **3º octeto** — igual ao 2º (preenchimento)
-> - **4º octeto** — 1 para routers, 2 para switches L3 (D1)
+> - **4º octeto** — 1 para routers, 2 para switches L3 (D2 nos grupos pares)
 
 | Router | Router-ID |
 | ------ | --------- |
 | R1     | 4.1.1.1   |
 | R2     | 4.2.2.1   |
 | R3     | 4.3.3.1   |
-| D1     | 4.1.1.2   |
+| D2     | 4.3.3.2   |
 
 ---
 
@@ -88,15 +89,15 @@ int g0/0
  no shutdown
  exit
 int g0/1
- description R1 - Area 41 p/ D1
- ip address 10.10.40.1 255.255.255.252
+ description R1 - Area 41 p/ D1 (L2)
+ ip address 10.10.40.1 255.255.255.0
  no shutdown
  exit
 router ospf 123
 router-id 4.1.1.1
 auto-cost reference-bandwidth 1000
 network 172.16.40.0 0.0.0.3 area 41
-network 10.10.40.0 0.0.0.3 area 41
+network 10.10.40.0 0.0.0.255 area 41
 area 41 stub
 end
 
@@ -187,15 +188,15 @@ int g0/0
  no shutdown
  exit
 int g0/1
- description R3 - Area 42 p/ D2/PC1
- ip address 10.10.44.1 255.255.255.0
+ description R3 - Area 42 p/ D2
+ ip address 10.10.44.1 255.255.255.252
  no shutdown
  exit
 router ospf 123
 router-id 4.3.3.1
 auto-cost reference-bandwidth 1000
 network 172.16.41.0 0.0.0.3 area 42
-network 10.10.44.0 0.0.0.255 area 42
+network 10.10.44.0 0.0.0.3 area 42
 area 42 stub
 end
 
@@ -227,30 +228,7 @@ line vty 0 15
  login
  exit
 service password-encryption
-ip routing
-int Fa0/5
- description D1 - Area 41 p/ R1
- no switchport
- ip address 10.10.40.2 255.255.255.252
- no shutdown
- exit
-int Fa0/23
- description D1 - LAN Area 41 p/ PC0
- no switchport
- ip address 10.10.41.1 255.255.255.0
- no shutdown
- exit
-router ospf 123
-router-id 4.1.1.2
-auto-cost reference-bandwidth 1000
-network 10.10.40.0 0.0.0.3 area 41
-network 10.10.41.0 0.0.0.255 area 41
-area 41 stub
 end
-
-show ip interface brief
-
-show ip ospf neighbor
 
 copy running-config startup-config
 ```
@@ -276,7 +254,30 @@ line vty 0 15
  login
  exit
 service password-encryption
+ip routing
+int Fa0/11
+ description D2 - Area 42 p/ R3
+ no switchport
+ ip address 10.10.44.2 255.255.255.252
+ no shutdown
+ exit
+int Fa0/23
+ description D2 - LAN Area 42 p/ PC1
+ no switchport
+ ip address 10.10.45.1 255.255.255.0
+ no shutdown
+ exit
+router ospf 123
+router-id 4.3.3.2
+auto-cost reference-bandwidth 1000
+network 10.10.44.0 0.0.0.3 area 42
+network 10.10.45.0 0.0.0.255 area 42
+area 42 stub
 end
+
+show ip interface brief
+
+show ip ospf neighbor
 
 copy running-config startup-config
 ```
@@ -286,13 +287,13 @@ copy running-config startup-config
 ### PC0
 
 ```
-IP: 10.10.41.10/24
-Gateway: 10.10.41.1
+IP: 10.10.40.10/24
+Gateway: 10.10.40.1
 ```
 
 ### PC1
 
 ```
-IP: 10.10.44.10/24
-Gateway: 10.10.44.1
+IP: 10.10.45.10/24
+Gateway: 10.10.45.1
 ```
