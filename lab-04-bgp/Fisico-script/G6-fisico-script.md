@@ -31,15 +31,70 @@
 ### Gestão (G0/2)
 | Router | Interface | IP | Máscara |
 |--------|-----------|-----|---------|
-| R1 | G0/2 | 192.168.6.1 | /24 |
-| R2 | G0/2 | 192.168.6.2 | /24 |
-| R3 | G0/2 | 192.168.6.3 | /24 |
-| PC gestão | — | 192.168.6.100 | /24 |
+| R1 | G0/2 | 192.168.0.61 | /24 |
+| R2 | G0/2 | 192.168.0.62 | /24 |
+| R3 | G0/2 | 192.168.0.63 | /24 |
 
 ---
 
-## R1
+## FASE 1 — Config mínima (aplicar manualmente via consola)
 
+### R1
+```ios
+configure terminal
+interface GigabitEthernet0/2
+ ip address 192.168.0.61 255.255.255.0
+ no shutdown
+ip domain-name lab.local
+crypto key generate rsa modulus 1024
+ip ssh version 2
+username admin privilege 15 secret class
+line vty 0 15
+ login local
+ transport input ssh
+end
+copy running-config startup-config
+```
+
+### R2
+```ios
+configure terminal
+interface GigabitEthernet0/2
+ ip address 192.168.0.62 255.255.255.0
+ no shutdown
+ip domain-name lab.local
+crypto key generate rsa modulus 1024
+ip ssh version 2
+username admin privilege 15 secret class
+line vty 0 15
+ login local
+ transport input ssh
+end
+copy running-config startup-config
+```
+
+### R3
+```ios
+configure terminal
+interface GigabitEthernet0/2
+ ip address 192.168.0.63 255.255.255.0
+ no shutdown
+ip domain-name lab.local
+crypto key generate rsa modulus 1024
+ip ssh version 2
+username admin privilege 15 secret class
+line vty 0 15
+ login local
+ transport input ssh
+end
+copy running-config startup-config
+```
+
+---
+
+## FASE 2 — Config completa (aplicada pelo script)
+
+### R1
 ```ios
 configure terminal
 hostname R1
@@ -63,10 +118,6 @@ interface GigabitEthernet0/0
 
 interface GigabitEthernet0/1
  ip address 10.16.13.1 255.255.255.252
- no shutdown
-
-interface GigabitEthernet0/2
- ip address 192.168.6.1 255.255.255.0
  no shutdown
 
 ip route 10.16.0.0 255.255.0.0 Null0
@@ -103,8 +154,7 @@ end
 copy running-config startup-config
 ```
 
-## R2
-
+### R2
 ```ios
 configure terminal
 hostname R2
@@ -128,10 +178,6 @@ interface GigabitEthernet0/0
 
 interface GigabitEthernet0/1
  ip address 10.16.23.1 255.255.255.252
- no shutdown
-
-interface GigabitEthernet0/2
- ip address 192.168.6.2 255.255.255.0
  no shutdown
 
 ip route 10.16.0.0 255.255.0.0 Null0
@@ -172,8 +218,7 @@ end
 copy running-config startup-config
 ```
 
-## R3
-
+### R3
 ```ios
 configure terminal
 hostname R3
@@ -197,10 +242,6 @@ interface GigabitEthernet0/0
 
 interface GigabitEthernet0/1
  ip address 10.16.23.2 255.255.255.252
- no shutdown
-
-interface GigabitEthernet0/2
- ip address 192.168.6.3 255.255.255.0
  no shutdown
 
 router ospf 1

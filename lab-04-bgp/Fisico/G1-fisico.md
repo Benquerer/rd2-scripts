@@ -214,7 +214,10 @@ hostname AS100
 no ip domain-lookup
 
 interface Loopback0
- ip address 100.100.0.1 255.255.0.0
+ ip address 100.100.11.1 255.255.255.240
+
+interface Loopback1
+ ip address 100.100.11.17 255.255.255.240
 
 interface GigabitEthernet0/0
  ip address 172.100.100.100 255.255.255.0
@@ -233,7 +236,8 @@ router bgp 100
  neighbor 172.100.100.15 remote-as 305
  neighbor 172.100.100.16 remote-as 306
  neighbor 192.168.2.2 remote-as 200
- network 100.100.0.0 mask 255.255.0.0
+ network 100.100.11.0 mask 255.255.255.240
+ network 100.100.11.16 mask 255.255.255.240
 
 end
 copy running-config startup-config
@@ -247,7 +251,10 @@ hostname AS200
 no ip domain-lookup
 
 interface Loopback0
- ip address 200.200.0.1 255.255.0.0
+ ip address 200.200.11.1 255.255.255.240
+
+interface Loopback1
+ ip address 200.200.11.17 255.255.255.240
 
 interface GigabitEthernet0/0
  ip address 172.200.200.100 255.255.255.0
@@ -266,7 +273,8 @@ router bgp 200
  neighbor 172.200.200.15 remote-as 305
  neighbor 172.200.200.16 remote-as 306
  neighbor 192.168.2.1 remote-as 100
- network 200.200.0.0 mask 255.255.0.0
+ network 200.200.11.0 mask 255.255.255.240
+ network 200.200.11.16 mask 255.255.255.240
 
 end
 copy running-config startup-config

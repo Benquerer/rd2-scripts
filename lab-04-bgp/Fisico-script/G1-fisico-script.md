@@ -31,15 +31,70 @@
 ### Gestão (G0/2)
 | Router | Interface | IP | Máscara |
 |--------|-----------|-----|---------|
-| R1 | G0/2 | 192.168.1.1 | /24 |
-| R2 | G0/2 | 192.168.1.2 | /24 |
-| R3 | G0/2 | 192.168.1.3 | /24 |
-| PC gestão | — | 192.168.1.100 | /24 |
+| R1 | G0/2 | 192.168.0.11 | /24 |
+| R2 | G0/2 | 192.168.0.12 | /24 |
+| R3 | G0/2 | 192.168.0.13 | /24 |
 
 ---
 
-## R1
+## FASE 1 — Config mínima (aplicar manualmente via consola)
 
+### R1
+```ios
+configure terminal
+interface GigabitEthernet0/2
+ ip address 192.168.0.11 255.255.255.0
+ no shutdown
+ip domain-name lab.local
+crypto key generate rsa modulus 1024
+ip ssh version 2
+username admin privilege 15 secret class
+line vty 0 15
+ login local
+ transport input ssh
+end
+copy running-config startup-config
+```
+
+### R2
+```ios
+configure terminal
+interface GigabitEthernet0/2
+ ip address 192.168.0.12 255.255.255.0
+ no shutdown
+ip domain-name lab.local
+crypto key generate rsa modulus 1024
+ip ssh version 2
+username admin privilege 15 secret class
+line vty 0 15
+ login local
+ transport input ssh
+end
+copy running-config startup-config
+```
+
+### R3
+```ios
+configure terminal
+interface GigabitEthernet0/2
+ ip address 192.168.0.13 255.255.255.0
+ no shutdown
+ip domain-name lab.local
+crypto key generate rsa modulus 1024
+ip ssh version 2
+username admin privilege 15 secret class
+line vty 0 15
+ login local
+ transport input ssh
+end
+copy running-config startup-config
+```
+
+---
+
+## FASE 2 — Config completa (aplicada pelo script)
+
+### R1
 ```ios
 configure terminal
 hostname R1
@@ -63,10 +118,6 @@ interface GigabitEthernet0/0
 
 interface GigabitEthernet0/1
  ip address 10.11.13.1 255.255.255.252
- no shutdown
-
-interface GigabitEthernet0/2
- ip address 192.168.1.1 255.255.255.0
  no shutdown
 
 ip route 10.11.0.0 255.255.0.0 Null0
@@ -103,8 +154,7 @@ end
 copy running-config startup-config
 ```
 
-## R2
-
+### R2
 ```ios
 configure terminal
 hostname R2
@@ -128,10 +178,6 @@ interface GigabitEthernet0/0
 
 interface GigabitEthernet0/1
  ip address 10.11.23.1 255.255.255.252
- no shutdown
-
-interface GigabitEthernet0/2
- ip address 192.168.1.2 255.255.255.0
  no shutdown
 
 ip route 10.11.0.0 255.255.0.0 Null0
@@ -172,8 +218,7 @@ end
 copy running-config startup-config
 ```
 
-## R3
-
+### R3
 ```ios
 configure terminal
 hostname R3
@@ -199,10 +244,6 @@ interface GigabitEthernet0/1
  ip address 10.11.23.2 255.255.255.252
  no shutdown
 
-interface GigabitEthernet0/2
- ip address 192.168.1.3 255.255.255.0
- no shutdown
-
 router ospf 1
  router-id 10.11.3.3
  auto-cost reference-bandwidth 1000
@@ -216,15 +257,57 @@ copy running-config startup-config
 
 ---
 
-## AS100
+## FASE 1 — AS100 e AS200 (aplicar manualmente via consola)
 
+### AS100
+```ios
+configure terminal
+interface GigabitEthernet0/2
+ ip address 192.168.0.100 255.255.255.0
+ no shutdown
+ip domain-name lab.local
+crypto key generate rsa modulus 1024
+ip ssh version 2
+username admin privilege 15 secret class
+line vty 0 15
+ login local
+ transport input ssh
+end
+copy running-config startup-config
+```
+
+### AS200
+```ios
+configure terminal
+interface GigabitEthernet0/2
+ ip address 192.168.0.200 255.255.255.0
+ no shutdown
+ip domain-name lab.local
+crypto key generate rsa modulus 1024
+ip ssh version 2
+username admin privilege 15 secret class
+line vty 0 15
+ login local
+ transport input ssh
+end
+copy running-config startup-config
+```
+
+---
+
+## FASE 2 — AS100 e AS200 (aplicada pelo script)
+
+### AS100
 ```ios
 configure terminal
 hostname AS100
 no ip domain-lookup
 
 interface Loopback0
- ip address 100.100.0.1 255.255.0.0
+ ip address 100.100.11.1 255.255.255.240
+
+interface Loopback1
+ ip address 100.100.11.17 255.255.255.240
 
 interface GigabitEthernet0/0
  ip address 172.100.100.100 255.255.255.0
@@ -232,10 +315,6 @@ interface GigabitEthernet0/0
 
 interface GigabitEthernet0/1
  ip address 192.168.2.1 255.255.255.252
- no shutdown
-
-interface GigabitEthernet0/2
- ip address 192.168.100.1 255.255.255.0
  no shutdown
 
 router bgp 100
@@ -247,21 +326,24 @@ router bgp 100
  neighbor 172.100.100.15 remote-as 305
  neighbor 172.100.100.16 remote-as 306
  neighbor 192.168.2.2 remote-as 200
- network 100.100.0.0 mask 255.255.0.0
+ network 100.100.11.0 mask 255.255.255.240
+ network 100.100.11.16 mask 255.255.255.240
 
 end
 copy running-config startup-config
 ```
 
-## AS200
-
+### AS200
 ```ios
 configure terminal
 hostname AS200
 no ip domain-lookup
 
 interface Loopback0
- ip address 200.200.0.1 255.255.0.0
+ ip address 200.200.11.1 255.255.255.240
+
+interface Loopback1
+ ip address 200.200.11.17 255.255.255.240
 
 interface GigabitEthernet0/0
  ip address 172.200.200.100 255.255.255.0
@@ -269,10 +351,6 @@ interface GigabitEthernet0/0
 
 interface GigabitEthernet0/1
  ip address 192.168.2.2 255.255.255.252
- no shutdown
-
-interface GigabitEthernet0/2
- ip address 192.168.200.1 255.255.255.0
  no shutdown
 
 router bgp 200
@@ -284,7 +362,8 @@ router bgp 200
  neighbor 172.200.200.15 remote-as 305
  neighbor 172.200.200.16 remote-as 306
  neighbor 192.168.2.1 remote-as 100
- network 200.200.0.0 mask 255.255.0.0
+ network 200.200.11.0 mask 255.255.255.240
+ network 200.200.11.16 mask 255.255.255.240
 
 end
 copy running-config startup-config
