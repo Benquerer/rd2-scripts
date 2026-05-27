@@ -1,6 +1,6 @@
 # Lab 04 — BGP em Multihomed (parte 1)
 
-**Grupo 6 | AS 306 | G=16 | Redes de Dados II | 2025-2026**
+**[GNS3] Grupo 5 | AS 305 | G=15 | Redes de Dados II | 2025-2026**
 
 ---
 
@@ -10,25 +10,25 @@
 
 | Router | Interface | IP        | Máscara |
 | ------ | --------- | --------- | ------- |
-| R1     | Loopback0 | 10.16.1.1 | /32     |
-| R2     | Loopback0 | 10.16.2.2 | /32     |
-| R3     | Loopback0 | 10.16.3.3 | /32     |
+| R1     | Loopback0 | 10.15.1.1 | /32     |
+| R2     | Loopback0 | 10.15.2.2 | /32     |
+| R3     | Loopback0 | 10.15.3.3 | /32     |
 
 ### Ligações Internas
 
 | Ligação | Rede          | Router | Interface | IP         |
 | ------- | ------------- | ------ | --------- | ---------- |
-| R1 — R3 | 10.16.13.0/30 | R1     | G0/1      | 10.16.13.1 |
-| R1 — R3 | 10.16.13.0/30 | R3     | G0/0      | 10.16.13.2 |
-| R2 — R3 | 10.16.23.0/30 | R2     | G0/1      | 10.16.23.1 |
-| R2 — R3 | 10.16.23.0/30 | R3     | G0/1      | 10.16.23.2 |
+| R1 — R3 | 10.15.13.0/30 | R1     | G0/1      | 10.15.13.1 |
+| R1 — R3 | 10.15.13.0/30 | R3     | G0/0      | 10.15.13.2 |
+| R2 — R3 | 10.15.23.0/30 | R2     | G0/1      | 10.15.23.1 |
+| R2 — R3 | 10.15.23.0/30 | R3     | G0/1      | 10.15.23.2 |
 
 ### Ligações Externas
 
 | Ligação    | Rede             | Router | Interface | IP             |
 | ---------- | ---------------- | ------ | --------- | -------------- |
-| R1 — AS100 | 172.100.100.0/24 | R1     | G0/0      | 172.100.100.16 |
-| R2 — AS200 | 172.200.200.0/24 | R2     | G0/0      | 172.200.200.16 |
+| R1 — AS100 | 172.100.100.0/24 | R1     | G0/0      | 172.100.100.15 |
+| R2 — AS200 | 172.200.200.0/24 | R2     | G0/0      | 172.200.200.15 |
 
 ---
 
@@ -49,17 +49,17 @@ line vty 0 15
 service password-encryption
 
 interface Loopback0
- ip address 10.16.1.1 255.255.255.255
+ ip address 10.15.1.1 255.255.255.255
 
-interface GigabitEthernet0/0
- ip address 172.100.100.16 255.255.255.0
+interface FastEthernet0/0
+ ip address 172.100.100.15 255.255.255.0
  no shutdown
 
-interface GigabitEthernet0/1
- ip address 10.16.13.1 255.255.255.252
+interface FastEthernet0/1
+ ip address 10.15.13.1 255.255.255.252
  no shutdown
 
-ip route 10.16.0.0 255.255.0.0 Null0
+ip route 10.15.0.0 255.255.0.0 Null0
 
 ip access-list standard FILTER-BGP
  deny 110.110.0.0 0.0.255.255
@@ -71,22 +71,22 @@ route-map BGP-TO-OSPF permit 10
 route-map SET-LOCAL-PREF permit 10
  set local-preference 200
 
-router ospf 6
- router-id 10.16.1.1
+router ospf 5
+ router-id 10.15.1.1
  auto-cost reference-bandwidth 1000
- network 10.16.1.1 0.0.0.0 area 0
- network 10.16.13.0 0.0.0.3 area 0
- redistribute bgp 306 subnets route-map BGP-TO-OSPF
+ network 10.15.1.1 0.0.0.0 area 0
+ network 10.15.13.0 0.0.0.3 area 0
+ redistribute bgp 305 subnets route-map BGP-TO-OSPF
  redistribute connected subnets
 
-router bgp 306
- bgp router-id 10.16.1.1
- neighbor 10.16.2.2 remote-as 306
- neighbor 10.16.2.2 update-source Loopback0
- neighbor 10.16.2.2 next-hop-self
+router bgp 305
+ bgp router-id 10.15.1.1
+ neighbor 10.15.2.2 remote-as 305
+ neighbor 10.15.2.2 update-source Loopback0
+ neighbor 10.15.2.2 next-hop-self
  neighbor 172.100.100.100 remote-as 100
  neighbor 172.100.100.100 route-map SET-LOCAL-PREF in
- network 10.16.0.0 mask 255.255.0.0
+ network 10.15.0.0 mask 255.255.0.0
  maximum-paths 2
 
 end
@@ -110,17 +110,17 @@ line vty 0 15
 service password-encryption
 
 interface Loopback0
- ip address 10.16.2.2 255.255.255.255
+ ip address 10.15.2.2 255.255.255.255
 
-interface GigabitEthernet0/0
- ip address 172.200.200.16 255.255.255.0
+interface FastEthernet0/0
+ ip address 172.200.200.15 255.255.255.0
  no shutdown
 
-interface GigabitEthernet0/1
- ip address 10.16.23.1 255.255.255.252
+interface FastEthernet0/1
+ ip address 10.15.23.1 255.255.255.252
  no shutdown
 
-ip route 10.16.0.0 255.255.0.0 Null0
+ip route 10.15.0.0 255.255.0.0 Null0
 
 ip access-list standard FILTER-BGP
  deny 110.110.0.0 0.0.255.255
@@ -133,25 +133,25 @@ route-map SET-LOCAL-PREF-LOW permit 10
  set local-preference 50
 
 route-map AS-PATH-PREPEND permit 10
- set as-path prepend 306 306
+ set as-path prepend 305 305
 
-router ospf 6
- router-id 10.16.2.2
+router ospf 5
+ router-id 10.15.2.2
  auto-cost reference-bandwidth 1000
- network 10.16.2.2 0.0.0.0 area 0
- network 10.16.23.0 0.0.0.3 area 0
- redistribute bgp 306 subnets route-map BGP-TO-OSPF
+ network 10.15.2.2 0.0.0.0 area 0
+ network 10.15.23.0 0.0.0.3 area 0
+ redistribute bgp 305 subnets route-map BGP-TO-OSPF
  redistribute connected subnets
 
-router bgp 306
- bgp router-id 10.16.2.2
- neighbor 10.16.1.1 remote-as 306
- neighbor 10.16.1.1 update-source Loopback0
- neighbor 10.16.1.1 next-hop-self
+router bgp 305
+ bgp router-id 10.15.2.2
+ neighbor 10.15.1.1 remote-as 305
+ neighbor 10.15.1.1 update-source Loopback0
+ neighbor 10.15.1.1 next-hop-self
  neighbor 172.200.200.100 remote-as 200
  neighbor 172.200.200.100 route-map SET-LOCAL-PREF-LOW in
  neighbor 172.200.200.100 route-map AS-PATH-PREPEND out
- network 10.16.0.0 mask 255.255.0.0
+ network 10.15.0.0 mask 255.255.0.0
  maximum-paths 2
 
 end
@@ -175,22 +175,22 @@ line vty 0 15
 service password-encryption
 
 interface Loopback0
- ip address 10.16.3.3 255.255.255.255
+ ip address 10.15.3.3 255.255.255.255
 
-interface GigabitEthernet0/0
- ip address 10.16.13.2 255.255.255.252
+interface FastEthernet0/0
+ ip address 10.15.13.2 255.255.255.252
  no shutdown
 
-interface GigabitEthernet0/1
- ip address 10.16.23.2 255.255.255.252
+interface FastEthernet0/1
+ ip address 10.15.23.2 255.255.255.252
  no shutdown
 
-router ospf 6
- router-id 10.16.3.3
+router ospf 5
+ router-id 10.15.3.3
  auto-cost reference-bandwidth 1000
- network 10.16.3.3 0.0.0.0 area 0
- network 10.16.13.0 0.0.0.3 area 0
- network 10.16.23.0 0.0.0.3 area 0
+ network 10.15.3.3 0.0.0.0 area 0
+ network 10.15.13.0 0.0.0.3 area 0
+ network 10.15.23.0 0.0.0.3 area 0
 
 end
 copy running-config startup-config

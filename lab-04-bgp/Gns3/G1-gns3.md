@@ -1,6 +1,6 @@
 # Lab 04 — BGP em Multihomed (parte 1)
 
-**Grupo 1 | AS 301 | G=11 | Redes de Dados II | 2025-2026**
+**[GNS3] Grupo 1 | AS 301 | G=11 | Redes de Dados II | 2025-2026**
 
 ---
 
@@ -53,11 +53,11 @@ service password-encryption
 interface Loopback0
  ip address 10.11.1.1 255.255.255.255
 
-interface GigabitEthernet0/0
+interface FastEthernet0/0
  ip address 172.100.100.11 255.255.255.0
  no shutdown
 
-interface GigabitEthernet0/1
+interface FastEthernet0/1
  ip address 10.11.13.1 255.255.255.252
  no shutdown
 
@@ -114,11 +114,11 @@ service password-encryption
 interface Loopback0
  ip address 10.11.2.2 255.255.255.255
 
-interface GigabitEthernet0/0
+interface FastEthernet0/0
  ip address 172.200.200.11 255.255.255.0
  no shutdown
 
-interface GigabitEthernet0/1
+interface FastEthernet0/1
  ip address 10.11.23.1 255.255.255.252
  no shutdown
 
@@ -179,11 +179,11 @@ service password-encryption
 interface Loopback0
  ip address 10.11.3.3 255.255.255.255
 
-interface GigabitEthernet0/0
+interface FastEthernet0/0
  ip address 10.11.13.2 255.255.255.252
  no shutdown
 
-interface GigabitEthernet0/1
+interface FastEthernet0/1
  ip address 10.11.23.2 255.255.255.252
  no shutdown
 
@@ -214,11 +214,11 @@ interface Loopback0
 interface Loopback1
  ip address 100.100.11.17 255.255.255.240
 
-interface GigabitEthernet0/0
+interface FastEthernet0/0
  ip address 172.100.100.100 255.255.255.0
  no shutdown
 
-interface GigabitEthernet0/1
+interface FastEthernet0/1
  ip address 192.168.2.1 255.255.255.252
  no shutdown
 
@@ -251,11 +251,11 @@ interface Loopback0
 interface Loopback1
  ip address 200.200.11.17 255.255.255.240
 
-interface GigabitEthernet0/0
+interface FastEthernet0/0
  ip address 172.200.200.100 255.255.255.0
  no shutdown
 
-interface GigabitEthernet0/1
+interface FastEthernet0/1
  ip address 192.168.2.2 255.255.255.252
  no shutdown
 

@@ -1,6 +1,6 @@
 # Lab 04 — BGP em Multihomed (parte 1)
 
-**Grupo 6 | AS 306 | G=16 | Redes de Dados II | 2025-2026**
+**[GNS3] Grupo 6 | AS 306 | G=16 | Redes de Dados II | 2025-2026**
 
 ---
 
@@ -51,11 +51,11 @@ service password-encryption
 interface Loopback0
  ip address 10.16.1.1 255.255.255.255
 
-interface GigabitEthernet0/0
+interface FastEthernet0/0
  ip address 172.100.100.16 255.255.255.0
  no shutdown
 
-interface GigabitEthernet0/1
+interface FastEthernet0/1
  ip address 10.16.13.1 255.255.255.252
  no shutdown
 
@@ -112,11 +112,11 @@ service password-encryption
 interface Loopback0
  ip address 10.16.2.2 255.255.255.255
 
-interface GigabitEthernet0/0
+interface FastEthernet0/0
  ip address 172.200.200.16 255.255.255.0
  no shutdown
 
-interface GigabitEthernet0/1
+interface FastEthernet0/1
  ip address 10.16.23.1 255.255.255.252
  no shutdown
 
@@ -177,11 +177,11 @@ service password-encryption
 interface Loopback0
  ip address 10.16.3.3 255.255.255.255
 
-interface GigabitEthernet0/0
+interface FastEthernet0/0
  ip address 10.16.13.2 255.255.255.252
  no shutdown
 
-interface GigabitEthernet0/1
+interface FastEthernet0/1
  ip address 10.16.23.2 255.255.255.252
  no shutdown
 

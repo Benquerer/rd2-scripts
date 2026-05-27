@@ -23,12 +23,6 @@
 | R2 — R3 | 10.15.23.0/30 | R2     | G0/1      | 10.15.23.1 |
 | R2 — R3 | 10.15.23.0/30 | R3     | G0/1      | 10.15.23.2 |
 
-### LAN
-
-| Rede           | Router | Interface | IP Gateway  | PC          |
-| -------------- | ------ | --------- | ----------- | ----------- |
-| 10.15.100.0/24 | R3     | G0/2      | 10.15.100.1 | 10.15.100.2 |
-
 ### Ligações Externas
 
 | Ligação    | Rede             | Router | Interface | IP             |
@@ -197,7 +191,6 @@ router ospf 5
  network 10.15.3.3 0.0.0.0 area 0
  network 10.15.13.0 0.0.0.3 area 0
  network 10.15.23.0 0.0.0.3 area 0
- network 10.15.100.0 0.0.0.255 area 0
 
 end
 copy running-config startup-config
