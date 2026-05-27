@@ -1,4 +1,5 @@
 # Lab 04 — BGP em Multihomed (parte 1)
+
 **Grupo 4 | AS 304 | G=14 | Redes de Dados II | 2025-2026**
 
 ---
@@ -6,30 +7,34 @@
 ## Plano de Endereçamento
 
 ### Loopbacks
-| Router | Interface | IP | Máscara |
-|--------|-----------|-----|---------|
-| R1 | Loopback0 | 10.14.1.1 | /32 |
-| R2 | Loopback0 | 10.14.2.2 | /32 |
-| R3 | Loopback0 | 10.14.3.3 | /32 |
+
+| Router | Interface | IP        | Máscara |
+| ------ | --------- | --------- | ------- |
+| R1     | Loopback0 | 10.14.1.1 | /32     |
+| R2     | Loopback0 | 10.14.2.2 | /32     |
+| R3     | Loopback0 | 10.14.3.3 | /32     |
 
 ### Ligações Internas
-| Ligação | Rede | Router | Interface | IP |
-|---------|------|--------|-----------|-----|
-| R1 — R3 | 10.14.13.0/30 | R1 | G0/1 | 10.14.13.1 |
-| R1 — R3 | 10.14.13.0/30 | R3 | G0/0 | 10.14.13.2 |
-| R2 — R3 | 10.14.23.0/30 | R2 | G0/1 | 10.14.23.1 |
-| R2 — R3 | 10.14.23.0/30 | R3 | G0/1 | 10.14.23.2 |
+
+| Ligação | Rede          | Router | Interface | IP         |
+| ------- | ------------- | ------ | --------- | ---------- |
+| R1 — R3 | 10.14.13.0/30 | R1     | G0/1      | 10.14.13.1 |
+| R1 — R3 | 10.14.13.0/30 | R3     | G0/0      | 10.14.13.2 |
+| R2 — R3 | 10.14.23.0/30 | R2     | G0/1      | 10.14.23.1 |
+| R2 — R3 | 10.14.23.0/30 | R3     | G0/1      | 10.14.23.2 |
 
 ### LAN
-| Rede | Router | Interface | IP Gateway | PC |
-|------|--------|-----------|------------|----|
-| 10.14.100.0/24 | R3 | G0/2 | 10.14.100.1 | 10.14.100.2 |
+
+| Rede           | Router | Interface | IP Gateway  | PC          |
+| -------------- | ------ | --------- | ----------- | ----------- |
+| 10.14.100.0/24 | R3     | G0/2      | 10.14.100.1 | 10.14.100.2 |
 
 ### Ligações Externas
-| Ligação | Rede | Router | Interface | IP |
-|---------|------|--------|-----------|-----|
-| R1 — AS100 | 172.100.100.0/24 | R1 | G0/0 | 172.100.100.14 |
-| R2 — AS200 | 172.200.200.0/24 | R2 | G0/0 | 172.200.200.14 |
+
+| Ligação    | Rede             | Router | Interface | IP             |
+| ---------- | ---------------- | ------ | --------- | -------------- |
+| R1 — AS100 | 172.100.100.0/24 | R1     | G0/0      | 172.100.100.14 |
+| R2 — AS200 | 172.200.200.0/24 | R2     | G0/0      | 172.200.200.14 |
 
 ---
 
@@ -72,7 +77,7 @@ route-map BGP-TO-OSPF permit 10
 route-map SET-LOCAL-PREF permit 10
  set local-preference 200
 
-router ospf 1
+router ospf 4
  router-id 10.14.1.1
  auto-cost reference-bandwidth 1000
  network 10.14.1.1 0.0.0.0 area 0
@@ -136,7 +141,7 @@ route-map SET-LOCAL-PREF-LOW permit 10
 route-map AS-PATH-PREPEND permit 10
  set as-path prepend 304 304
 
-router ospf 1
+router ospf 4
  router-id 10.14.2.2
  auto-cost reference-bandwidth 1000
  network 10.14.2.2 0.0.0.0 area 0
@@ -186,11 +191,7 @@ interface GigabitEthernet0/1
  ip address 10.14.23.2 255.255.255.252
  no shutdown
 
-interface GigabitEthernet0/2
- ip address 10.14.100.1 255.255.255.0
- no shutdown
-
-router ospf 1
+router ospf 4
  router-id 10.14.3.3
  auto-cost reference-bandwidth 1000
  network 10.14.3.3 0.0.0.0 area 0
