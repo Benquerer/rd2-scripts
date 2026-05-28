@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BGP Lab // Connections</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <header>
+    <span class="logo">BGP·LAB<span class="blink">_</span></span>
+    <nav>
+      <a href="/">configure</a>
+      <a href="/test" class="active">connections</a>
+      <a href="/terminal">terminal</a>
+    </nav>
+  </header>
+
+  <main>
+    <h1>connections</h1>
+    <p class="subtitle">Test reachability and validate OSPF/BGP state across a group.</p>
+
+    <div class="panel">
+      <div class="panel-title">session</div>
+      <div class="row">
+        <div>
+          <label>group</label>
+          <select id="group"><option value="">— select —</option></select>
+        </div>
+        <div><label>username</label><input id="user" value="admin"></div>
+        <div><label>password</label><input id="pass" type="password" value="class"></div>
+        <div><label>enable secret</label><input id="secret" type="password" placeholder="(= password)"></div>
+      </div>
+      <div class="row" style="margin-top:16px">
+        <button class="btn-primary" id="btn-test">⇄  test reachability</button>
+        <button class="btn-primary" id="btn-verify">✓  verify OSPF / BGP</button>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">results</div>
+      <div id="console" class="console"></div>
+    </div>
+  </main>
+
+  <script>
+    const API = "{{ api_base }}";
+    const $ = s => document.querySelector(s);
+    const con = $("#console");
+    function log(m,l="info"){const s=document.createElement("span");s.className="line-"+l;s.textContent=m+"\n";con.appendChild(s);con.scrollTop=con.scrollHeight;}
+    function logEvents(ev){(ev||[]).forEach(e=>log(e.message,e.level||"info"));}
+    function creds(){return{username:$("#user").value,password:$("#pass").value,secret:$("#secret").value||null};}
+
+    async function loadGroups(){
+      const r=await fetch(API+"/api/groups");const d=await r.json();
+      d.forEach(g=>{const o=document.createElement("option");o.value=g.group;o.textContent=g.group;$("#group").appendChild(o);});
+    }
+
+    async function run(endpoint, label){
+      const group=$("#group").value;
+      if(!group){log("select a group first","error");return;}
+      log(`>> ${label} ${group}…`,"cmd");
+      const r=await fetch(API+endpoint,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({group,creds:creds()})});
+      logEvents((await r.json()).events);
+      log("done.","info");
+    }
+
+    $("#btn-test").onclick   = () => run("/api/test","reachability");
+    $("#btn-verify").onclick = () => run("/api/verify","verify");
+    loadGroups();
+  </script>
+</body>
+</html>

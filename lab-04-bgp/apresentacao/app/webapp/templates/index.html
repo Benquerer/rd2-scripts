@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BGP Lab // Configure</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <header>
+    <span class="logo">BGP·LAB<span class="blink">_</span></span>
+    <nav>
+      <a href="/" class="active">configure</a>
+      <a href="/test">connections</a>
+      <a href="/terminal">terminal</a>
+    </nav>
+  </header>
+
+  <main>
+    <h1>configure</h1>
+    <p class="subtitle">Select a group, enter SSH credentials, and act per router. Jump-host tunnels are built automatically.</p>
+
+    <div class="panel">
+      <div class="panel-title">session</div>
+      <div class="row">
+        <div>
+          <label>group</label>
+          <select id="group"><option value="">— select —</option></select>
+        </div>
+        <div><label>username</label><input id="user" value="admin"></div>
+        <div><label>password</label><input id="pass" type="password" value="class"></div>
+        <div><label>enable secret</label><input id="secret" type="password" placeholder="(= password)"></div>
+      </div>
+    </div>
+
+    <div id="routers" class="routers"></div>
+
+    <div class="panel" style="margin-top:24px">
+      <div class="panel-title">output</div>
+      <div id="console" class="console"></div>
+    </div>
+  </main>
+
+  <!-- config modal -->
+  <div class="modal-bg" id="modal">
+    <div class="modal">
+      <h2 id="modal-title">Configure</h2>
+      <p class="modal-sub" id="modal-sub"></p>
+      <textarea id="modal-text" placeholder="Paste IOS config lines, one per line…"></textarea>
+      <p class="hint">Lines are sent in order via <code>send_config_set</code> and saved with <code>copy run start</code>.</p>
+      <div class="modal-actions">
+        <button onclick="closeModal()">cancel</button>
+        <button class="btn-primary" id="modal-apply">apply config</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API = "{{ api_base }}";
+    const $ = s => document.querySelector(s);
+    const con = $("#console");
+
+    function log(msg, level="info") {
+      const span = document.createElement("span");
+      span.className = "line-" + level;
+      span.textContent = msg + "\n";
+      con.appendChild(span);
+      con.scrollTop = con.scrollHeight;
+    }
+    function logEvents(events) {
+      (events || []).forEach(e => log(e.message, e.level || "info"));
+    }
+    function creds() {
+      return {
+        username: $("#user").value,
+        password: $("#pass").value,
+        secret: $("#secret").value || null,
+      };
+    }
+
+    let GROUPS = {};
+    async function loadGroups() {
+      const r = await fetch(API + "/api/groups");
+      const data = await r.json();
+      const sel = $("#group");
+      data.forEach(g => {
+        GROUPS[g.group] = g.routers;
+        const o = document.createElement("option");
+        o.value = g.group; o.textContent = g.group;
+        sel.appendChild(o);
+      });
+    }
+
+    function renderRouters(group) {
+      const box = $("#routers");
+      box.innerHTML = "";
+      if (!group) return;
+      GROUPS[group].forEach(router => {
+        const card = document.createElement("div");
+        card.className = "router-card";
+        card.innerHTML = `
+          <div class="router-name">${router}</div>
+          <div class="router-ip">${group}</div>
+          <div class="router-actions">
+            <button data-a="manual">⌨  configure (manual)</button>
+            <button data-a="default">⬇  apply default config</button>
+            <button class="btn-danger" data-a="erase">✕  erase + reload</button>
+          </div>`;
+        card.querySelector('[data-a=manual]').onclick = () => openModal(group, router);
+        card.querySelector('[data-a=default]').onclick = () => applyDefault(group, router);
+        card.querySelector('[data-a=erase]').onclick = () => eraseRouter(group, router);
+        box.appendChild(card);
+      });
+    }
+
+    $("#group").onchange = e => renderRouters(e.target.value);
+
+    // ---- modal (manual config) ----
+    let modalCtx = {};
+    async function openModal(group, router) {
+      modalCtx = { group, router };
+      $("#modal-title").textContent = `Configure ${group}-${router}`;
+      $("#modal-sub").textContent = "Manual IOS configuration";
+      $("#modal-text").value = "";
+      // prefill with the default config as a starting point
+      try {
+        const r = await fetch(`${API}/api/default-config?group=${group}&router=${router}`);
+        const d = await r.json();
+        if (d.text) $("#modal-text").value = d.text;
+      } catch (_) {}
+      $("#modal").classList.add("open");
+    }
+    function closeModal() { $("#modal").classList.remove("open"); }
+
+    $("#modal-apply").onclick = async () => {
+      const cmds = $("#modal-text").value.split("\n").filter(l => l.length);
+      closeModal();
+      log(`>> configuring ${modalCtx.group}-${modalCtx.router} (${cmds.length} lines)…`, "cmd");
+      const r = await fetch(API + "/api/configure", {
+        method: "POST", headers: {"Content-Type":"application/json"},
+        body: JSON.stringify({ ...modalCtx, creds: creds(), commands: cmds }),
+      });
+      logEvents((await r.json()).events);
+    };
+
+    async function applyDefault(group, router) {
+      log(`>> applying default config to ${group}-${router}…`, "cmd");
+      const r = await fetch(API + "/api/configure", {
+        method: "POST", headers: {"Content-Type":"application/json"},
+        body: JSON.stringify({ group, router, creds: creds(), commands: null }),
+      });
+      logEvents((await r.json()).events);
+    }
+
+    async function eraseRouter(group, router) {
+      if (!confirm(`Erase startup-config and reload ${group}-${router}?`)) return;
+      log(`>> erasing ${group}-${router}…`, "cmd");
+      const r = await fetch(API + "/api/erase", {
+        method: "POST", headers: {"Content-Type":"application/json"},
+        body: JSON.stringify({ group, router, creds: creds() }),
+      });
+      logEvents((await r.json()).events);
+    }
+
+    loadGroups();
+  </script>
+</body>
+</html>
