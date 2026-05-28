@@ -1,105 +1,111 @@
 # Lab 04 — BGP em Multihomed (parte 1)
+
 **Grupo 6 | AS 306 | G=16 | Redes de Dados II | 2025-2026**
 
-> Versão com interface de gestão G0/2 para automação via script.
+> Versão com interface de gestão para automação via script.
 
 ---
 
 ## Plano de Endereçamento
 
 ### Loopbacks
-| Router | Interface | IP | Máscara |
-|--------|-----------|-----|---------|
-| R1 | Loopback0 | 10.16.1.1 | /32 |
-| R2 | Loopback0 | 10.16.2.2 | /32 |
-| R3 | Loopback0 | 10.16.3.3 | /32 |
+
+| Router | Interface | IP        | Máscara |
+| ------ | --------- | --------- | ------- |
+| R1     | Loopback0 | 10.16.1.1 | /32     |
+| R2     | Loopback0 | 10.16.2.2 | /32     |
+| R3     | Loopback0 | 10.16.3.3 | /32     |
 
 ### Ligações Internas
-| Ligação | Rede | Router | Interface | IP |
-|---------|------|--------|-----------|-----|
-| R1 — R3 | 10.16.13.0/30 | R1 | G0/1 | 10.16.13.1 |
-| R1 — R3 | 10.16.13.0/30 | R3 | G0/0 | 10.16.13.2 |
-| R2 — R3 | 10.16.23.0/30 | R2 | G0/1 | 10.16.23.1 |
-| R2 — R3 | 10.16.23.0/30 | R3 | G0/1 | 10.16.23.2 |
+
+| Ligação | Rede          | Router | Interface | IP         |
+| ------- | ------------- | ------ | --------- | ---------- |
+| R1 — R3 | 10.16.13.0/30 | R1     | G0/1      | 10.16.13.1 |
+| R1 — R3 | 10.16.13.0/30 | R3     | G0/0      | 10.16.13.2 |
+| R2 — R3 | 10.16.23.0/30 | R2     | G0/1      | 10.16.23.1 |
+| R2 — R3 | 10.16.23.0/30 | R3     | G0/1      | 10.16.23.2 |
 
 ### Ligações Externas
-| Ligação | Rede | Router | Interface | IP |
-|---------|------|--------|-----------|-----|
-| R1 — AS100 | 172.100.100.0/24 | R1 | G0/0 | 172.100.100.16 |
-| R2 — AS200 | 172.200.200.0/24 | R2 | G0/0 | 172.200.200.16 |
 
-### Gestão (G0/2)
-| Router | Interface | IP | Máscara |
-|--------|-----------|-----|---------|
-| R1 | G0/2 | 192.168.0.61 | /24 |
-| R2 | G0/2 | 192.168.0.62 | /24 |
-| R3 | G0/2 | 192.168.0.63 | /24 |
+| Ligação    | Rede             | Router | Interface | IP             |
+| ---------- | ---------------- | ------ | --------- | -------------- |
+| R1 — AS100 | 172.100.100.0/24 | R1     | G0/0      | 172.100.100.16 |
+| R2 — AS200 | 172.200.200.0/24 | R2     | G0/0      | 172.200.200.16 |
 
 ---
 
-## FASE 1 — Config mínima (aplicar manualmente via consola)
+## FASE 1 — Aplicar manualmente via consola
 
 ### R1
+
 ```ios
 configure terminal
-interface GigabitEthernet0/2
- ip address 192.168.0.61 255.255.255.0
- no shutdown
-ip domain-name lab.local
-crypto key generate rsa modulus 1024
-ip ssh version 2
-username admin privilege 15 secret class
+ip domain-name lab4.local
+username admin privilege 15 password class
 line vty 0 15
  login local
  transport input ssh
+interface GigabitEthernet0/0
+ ip address 172.100.100.16 255.255.255.0
+ no shutdown
+interface GigabitEthernet0/1
+ ip address 10.16.13.1 255.255.255.252
+ no shutdown
 end
+crypto key generate rsa modulus 1024
 copy running-config startup-config
 ```
 
 ### R2
+
 ```ios
 configure terminal
-interface GigabitEthernet0/2
- ip address 192.168.0.62 255.255.255.0
- no shutdown
-ip domain-name lab.local
-crypto key generate rsa modulus 1024
-ip ssh version 2
-username admin privilege 15 secret class
+ip domain-name lab4.local
+username admin privilege 15 password class
 line vty 0 15
  login local
  transport input ssh
+interface GigabitEthernet0/0
+ ip address 172.200.200.16 255.255.255.0
+ no shutdown
+interface GigabitEthernet0/1
+ ip address 10.16.23.1 255.255.255.252
+ no shutdown
 end
+crypto key generate rsa modulus 1024
 copy running-config startup-config
 ```
 
 ### R3
+
 ```ios
 configure terminal
-interface GigabitEthernet0/2
- ip address 192.168.0.63 255.255.255.0
- no shutdown
-ip domain-name lab.local
-crypto key generate rsa modulus 1024
-ip ssh version 2
-username admin privilege 15 secret class
+ip domain-name lab4.local
+username admin privilege 15 password class
 line vty 0 15
  login local
  transport input ssh
+interface GigabitEthernet0/0
+ ip address 10.16.13.2 255.255.255.252
+ no shutdown
+interface GigabitEthernet0/1
+ ip address 10.16.23.2 255.255.255.252
+ no shutdown
 end
+crypto key generate rsa modulus 1024
 copy running-config startup-config
 ```
 
 ---
 
-## FASE 2 — Config completa (aplicada pelo script)
+## FASE 2 — Aplicada pelo script
 
 ### R1
+
 ```ios
 configure terminal
 hostname R1
 no ip domain-lookup
-enable secret class
 banner motd #Acesso autorizado apenas.#
 line console 0
  password class
@@ -111,14 +117,6 @@ service password-encryption
 
 interface Loopback0
  ip address 10.16.1.1 255.255.255.255
-
-interface GigabitEthernet0/0
- ip address 172.100.100.16 255.255.255.0
- no shutdown
-
-interface GigabitEthernet0/1
- ip address 10.16.13.1 255.255.255.252
- no shutdown
 
 ip route 10.16.0.0 255.255.0.0 Null0
 
@@ -132,7 +130,7 @@ route-map BGP-TO-OSPF permit 10
 route-map SET-LOCAL-PREF permit 10
  set local-preference 200
 
-router ospf 1
+router ospf 6
  router-id 10.16.1.1
  auto-cost reference-bandwidth 1000
  network 10.16.1.1 0.0.0.0 area 0
@@ -155,11 +153,11 @@ copy running-config startup-config
 ```
 
 ### R2
+
 ```ios
 configure terminal
 hostname R2
 no ip domain-lookup
-enable secret class
 banner motd #Acesso autorizado apenas.#
 line console 0
  password class
@@ -171,14 +169,6 @@ service password-encryption
 
 interface Loopback0
  ip address 10.16.2.2 255.255.255.255
-
-interface GigabitEthernet0/0
- ip address 172.200.200.16 255.255.255.0
- no shutdown
-
-interface GigabitEthernet0/1
- ip address 10.16.23.1 255.255.255.252
- no shutdown
 
 ip route 10.16.0.0 255.255.0.0 Null0
 
@@ -195,7 +185,7 @@ route-map SET-LOCAL-PREF-LOW permit 10
 route-map AS-PATH-PREPEND permit 10
  set as-path prepend 306 306
 
-router ospf 1
+router ospf 6
  router-id 10.16.2.2
  auto-cost reference-bandwidth 1000
  network 10.16.2.2 0.0.0.0 area 0
@@ -219,11 +209,11 @@ copy running-config startup-config
 ```
 
 ### R3
+
 ```ios
 configure terminal
 hostname R3
 no ip domain-lookup
-enable secret class
 banner motd #Acesso autorizado apenas.#
 line console 0
  password class
@@ -236,15 +226,7 @@ service password-encryption
 interface Loopback0
  ip address 10.16.3.3 255.255.255.255
 
-interface GigabitEthernet0/0
- ip address 10.16.13.2 255.255.255.252
- no shutdown
-
-interface GigabitEthernet0/1
- ip address 10.16.23.2 255.255.255.252
- no shutdown
-
-router ospf 1
+router ospf 6
  router-id 10.16.3.3
  auto-cost reference-bandwidth 1000
  network 10.16.3.3 0.0.0.0 area 0

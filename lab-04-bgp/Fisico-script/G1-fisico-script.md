@@ -1,4 +1,5 @@
 # Lab 04 — BGP em Multihomed (parte 1)
+
 **Grupo 1 | AS 301 | G=11 | Redes de Dados II | 2025-2026**
 
 > Versão com interface de gestão G0/2 para automação via script.
@@ -8,38 +9,43 @@
 ## Plano de Endereçamento
 
 ### Loopbacks
-| Router | Interface | IP | Máscara |
-|--------|-----------|-----|---------|
-| R1 | Loopback0 | 10.11.1.1 | /32 |
-| R2 | Loopback0 | 10.11.2.2 | /32 |
-| R3 | Loopback0 | 10.11.3.3 | /32 |
+
+| Router | Interface | IP        | Máscara |
+| ------ | --------- | --------- | ------- |
+| R1     | Loopback0 | 10.11.1.1 | /32     |
+| R2     | Loopback0 | 10.11.2.2 | /32     |
+| R3     | Loopback0 | 10.11.3.3 | /32     |
 
 ### Ligações Internas
-| Ligação | Rede | Router | Interface | IP |
-|---------|------|--------|-----------|-----|
-| R1 — R3 | 10.11.13.0/30 | R1 | G0/1 | 10.11.13.1 |
-| R1 — R3 | 10.11.13.0/30 | R3 | G0/0 | 10.11.13.2 |
-| R2 — R3 | 10.11.23.0/30 | R2 | G0/1 | 10.11.23.1 |
-| R2 — R3 | 10.11.23.0/30 | R3 | G0/1 | 10.11.23.2 |
+
+| Ligação | Rede          | Router | Interface | IP         |
+| ------- | ------------- | ------ | --------- | ---------- |
+| R1 — R3 | 10.11.13.0/30 | R1     | G0/1      | 10.11.13.1 |
+| R1 — R3 | 10.11.13.0/30 | R3     | G0/0      | 10.11.13.2 |
+| R2 — R3 | 10.11.23.0/30 | R2     | G0/1      | 10.11.23.1 |
+| R2 — R3 | 10.11.23.0/30 | R3     | G0/1      | 10.11.23.2 |
 
 ### Ligações Externas
-| Ligação | Rede | Router | Interface | IP |
-|---------|------|--------|-----------|-----|
-| R1 — AS100 | 172.100.100.0/24 | R1 | G0/0 | 172.100.100.11 |
-| R2 — AS200 | 172.200.200.0/24 | R2 | G0/0 | 172.200.200.11 |
+
+| Ligação    | Rede             | Router | Interface | IP             |
+| ---------- | ---------------- | ------ | --------- | -------------- |
+| R1 — AS100 | 172.100.100.0/24 | R1     | G0/0      | 172.100.100.11 |
+| R2 — AS200 | 172.200.200.0/24 | R2     | G0/0      | 172.200.200.11 |
 
 ### Gestão (G0/2)
-| Router | Interface | IP | Máscara |
-|--------|-----------|-----|---------|
-| R1 | G0/2 | 192.168.0.11 | /24 |
-| R2 | G0/2 | 192.168.0.12 | /24 |
-| R3 | G0/2 | 192.168.0.13 | /24 |
+
+| Router | Interface | IP           | Máscara |
+| ------ | --------- | ------------ | ------- |
+| R1     | G0/2      | 192.168.0.11 | /24     |
+| R2     | G0/2      | 192.168.0.12 | /24     |
+| R3     | G0/2      | 192.168.0.13 | /24     |
 
 ---
 
 ## FASE 1 — Config mínima (aplicar manualmente via consola)
 
 ### R1
+
 ```ios
 configure terminal
 interface GigabitEthernet0/2
@@ -57,6 +63,7 @@ copy running-config startup-config
 ```
 
 ### R2
+
 ```ios
 configure terminal
 interface GigabitEthernet0/2
@@ -74,6 +81,7 @@ copy running-config startup-config
 ```
 
 ### R3
+
 ```ios
 configure terminal
 interface GigabitEthernet0/2
@@ -95,20 +103,11 @@ copy running-config startup-config
 ## FASE 2 — Config completa (aplicada pelo script)
 
 ### R1
+
 ```ios
 configure terminal
 hostname R1
-no ip domain-lookup
 enable secret class
-banner motd #Acesso autorizado apenas.#
-line console 0
- password class
- login
-line vty 0 15
- password class
- login
-service password-encryption
-
 interface Loopback0
  ip address 10.11.1.1 255.255.255.255
 
@@ -155,6 +154,7 @@ copy running-config startup-config
 ```
 
 ### R2
+
 ```ios
 configure terminal
 hostname R2
@@ -219,6 +219,7 @@ copy running-config startup-config
 ```
 
 ### R3
+
 ```ios
 configure terminal
 hostname R3
@@ -260,6 +261,7 @@ copy running-config startup-config
 ## FASE 1 — AS100 e AS200 (aplicar manualmente via consola)
 
 ### AS100
+
 ```ios
 configure terminal
 interface GigabitEthernet0/2
@@ -277,6 +279,7 @@ copy running-config startup-config
 ```
 
 ### AS200
+
 ```ios
 configure terminal
 interface GigabitEthernet0/2
@@ -298,6 +301,7 @@ copy running-config startup-config
 ## FASE 2 — AS100 e AS200 (aplicada pelo script)
 
 ### AS100
+
 ```ios
 configure terminal
 hostname AS100
@@ -334,6 +338,7 @@ copy running-config startup-config
 ```
 
 ### AS200
+
 ```ios
 configure terminal
 hostname AS200
