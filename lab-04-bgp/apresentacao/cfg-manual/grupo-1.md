@@ -215,11 +215,11 @@ interface Loopback0
 interface Loopback1
  ip address 100.100.11.17 255.255.255.240
 
-interface FastEthernet0/0
+interface GigabitEthernet0/0
  ip address 172.100.100.100 255.255.255.0
  no shutdown
 
-interface FastEthernet0/1
+interface GigabitEthernet0/1
  ip address 192.168.2.1 255.255.255.252
  no shutdown
 
@@ -252,11 +252,11 @@ interface Loopback0
 interface Loopback1
  ip address 200.200.11.17 255.255.255.240
 
-interface FastEthernet0/0
+interface GigabitEthernet0/0
  ip address 172.200.200.100 255.255.255.0
  no shutdown
 
-interface FastEthernet0/1
+interface GigabitEthernet0/1
  ip address 192.168.2.2 255.255.255.252
  no shutdown
 
