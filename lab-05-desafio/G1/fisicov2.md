@@ -324,11 +324,11 @@ copy running-config startup-config
 hostname AS100-R
 interface Loopback0
  ip address 100.1.1.1 255.255.255.0
-interface GigabitEthernet0/0
+interface FastEthernet0/1
  description -> R1
  ip address 172.17.1.2 255.255.255.252
  no shutdown
-interface GigabitEthernet0/1
+interface FastEthernet0/2
  description -> AS200-R
  ip address 172.25.1.1 255.255.255.252
  no shutdown
@@ -344,11 +344,11 @@ router bgp 100
 hostname AS200-R
 interface Loopback0
  ip address 200.1.1.1 255.255.255.0
-interface GigabitEthernet0/0
+interface FastEthernet0/1
  description -> R3
  ip address 172.21.1.2 255.255.255.252
  no shutdown
-interface GigabitEthernet0/1
+interface FastEthernet0/2
  description -> AS100-R
  ip address 172.25.1.2 255.255.255.252
  no shutdown
