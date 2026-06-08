@@ -199,8 +199,8 @@ router ospf 123
  network 10.1.1.130 0.0.0.0 area 0
 !
 ! ===== Rotas por defeito (Tarefa 4) =====
-ip route 0.0.0.0 0.0.0.0 FastEthernet0/0 10.1.1.1
-ip route 0.0.0.0 0.0.0.0 FastEthernet0/1 10.1.1.6 200
+ip route 0.0.0.0 0.0.0.0 GigabitEthernet0/0 10.1.1.1
+ip route 0.0.0.0 0.0.0.0 GigabitEthernet0/1 10.1.1.6 200
 !
 end
 copy running-config startup-config
