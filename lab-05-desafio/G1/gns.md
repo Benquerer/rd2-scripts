@@ -111,7 +111,7 @@ interface fa0/1
  ip address 10.1.1.1 255.255.255.252
  no shutdown
 !
-interface s0/0
+interface fa3/0
  description -> PC-A1 (LAN Area 1)
  ip address 10.1.1.17 255.255.255.240
  no shutdown
@@ -127,7 +127,7 @@ router ospf 123
  network 10.1.1.0 0.0.0.3 area 0
  network 10.1.1.129 0.0.0.0 area 0
  network 10.1.1.16 0.0.0.15 area 1
- passive-interface s0/0
+ passive-interface fa3/0
  redistribute rip subnets metric 20 metric-type 2
  default-information originate always
 !
