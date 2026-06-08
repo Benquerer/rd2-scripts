@@ -312,7 +312,7 @@ router bgp 200
 
 **R1** (adicionar):
 ```
-interface Serial0/0/0
+interface Serial0/1/0
  description -> R3
  ip address 10.1.1.9 255.255.255.252
  clock rate 128000
@@ -323,7 +323,7 @@ router ospf 123
 ```
 **R3** (adicionar):
 ```
-interface Serial0/0/0
+interface Serial0/1/0
  description -> R1
  ip address 10.1.1.10 255.255.255.252
  no shutdown
