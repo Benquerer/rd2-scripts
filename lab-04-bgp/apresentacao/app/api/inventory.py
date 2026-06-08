@@ -1,60 +1,52 @@
-# Per-domain addresses
+# inventory.py - single group (Lab #05 Desafio, Grupo 1 / AS60101)
+# The group now owns its provider routers (AS100, AS200) too, so all
+# six routers are configurable through the app.
+
+# Reachability / SSH addresses.
+# R1 is the entry point on the management subnet; every other router is
+# reached by tunnelling from R1 to the interface it shares with the jump
+# host (directly-connected next-hop IP). The only value carried over from
+# Lab 04 is R1's management address - confirm it for this lab.
 ROUTERS = {
-    # groups
-    "G1": {"R1": "172.100.100.11", "R3": "10.11.13.2", "R2": "10.11.23.1"},
-    "G2": {"R1": "172.100.100.12", "R3": "10.12.13.2", "R2": "10.12.23.1"},
-    "G3": {"R1": "172.100.100.13", "R3": "10.13.13.2", "R2": "10.13.23.1"},
-    "G4": {"R1": "172.100.100.14", "R3": "10.14.13.2", "R2": "10.14.23.1"},
-    "G5": {"R1": "172.100.100.15", "R3": "10.15.13.2", "R2": "10.15.23.1"},
-    "G6": {"R1": "172.100.100.16", "R3": "10.16.13.2", "R2": "10.16.23.1"},
-    # provider core.
-    "CORE": {"AS100": "172.100.100.100", "AS200": "172.200.200.100"},
+    "G1": {
+        "R1":     "172.100.100.11",   # management subnet, directly reachable
+        "R2":     "10.1.1.2",         # R1<->R2 link  (R2 G0/0),     via R1
+        "R3":     "10.1.1.10",        # R1<->R3 serial (R3 S0/0/0),  via R1
+        "R4-RIP": "10.1.1.50",        # R1<->R4 link  (R4 G0/0),     via R1
+        "AS100":  "172.17.1.2",       # R1<->AS100 link (AS100 G0/0),via R1
+        "AS200":  "172.21.1.2",       # R3<->AS200 link (AS200 G0/0),via R1->R3
+    },
 }
 
-# group-specific data to fill config
+# group-specific data (asn used for reference; configs come from the .cfg)
 GROUP_INFO = {
-    "G1": {"gn": 11, "asn": 301},
-    "G2": {"gn": 12, "asn": 302},
-    "G3": {"gn": 13, "asn": 303},
-    "G4": {"gn": 14, "asn": 304},
-    "G5": {"gn": 15, "asn": 305},
-    "G6": {"gn": 16, "asn": 306},
-    "CORE": {"gn": None, "asn": None},
+    "G1": {"gn": 1, "asn": 60101},
 }
 
-# configuration order
+# configuration / display order
 CONFIG_ORDER = {
-    "G1": ["R1", "R3", "R2"],
-    "G2": ["R1", "R3", "R2"],
-    "G3": ["R1", "R3", "R2"],
-    "G4": ["R1", "R3", "R2"],
-    "G5": ["R1", "R3", "R2"],
-    "G6": ["R1", "R3", "R2"],
-    "CORE": ["AS100", "AS200"],
+    "G1": ["R1", "R2", "R3", "R4-RIP", "AS100", "AS200"],
 }
 
-# Jump chain for each router
-# Empty = directly reachable.
+# Jump chain for each router. Empty = directly reachable.
 JUMP_HOSTS = {
     "R1": [],
+    "R2": ["R1"],
     "R3": ["R1"],
-    "R2": ["R1", "R3"],
-    "AS100": [],
-    "AS200": [],
+    "R4-RIP": ["R1"],
+    "AS100": ["R1"],
+    "AS200": ["R1", "R3"],
 }
 
 
 def list_groups():
-    """Return group names for the UI dropdown, Core last."""
-    groups = [g for g in ROUTERS if g != "CORE"]
-    groups.sort()
-    return groups + ["CORE"]
+    """Return group names for the UI dropdown."""
+    return list(ROUTERS)
 
 
 def routers_for(group):
     """Return the ordered router names for a group."""
-    group = group.upper()
-    return CONFIG_ORDER.get(group, [])
+    return CONFIG_ORDER.get(group.upper(), [])
 
 
 def is_valid(group, router=None):

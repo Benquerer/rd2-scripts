@@ -120,6 +120,12 @@ interface FastEthernet0/0/1
  description -> R4-RIP (zona RIP)
  ip address 10.1.1.49 255.255.255.252
  no shutdown
+! 
+interface Serial0/1/0
+ description -> R3
+ ip address 10.1.1.9 255.255.255.252
+ clock rate 128000
+ no shutdown
 !
 ! ===== OSPF (ABR Area 0/1 + ASBR) =====
 router ospf 123
@@ -127,6 +133,7 @@ router ospf 123
  network 10.1.1.0 0.0.0.3 area 0
  network 10.1.1.129 0.0.0.0 area 0
  network 10.1.1.16 0.0.0.15 area 1
+ network 10.1.1.8 0.0.0.3 area 0
  passive-interface FastEthernet0/0/0
  redistribute rip subnets metric 20 metric-type 2
  default-information originate always
@@ -245,6 +252,10 @@ interface GigabitEthernet0/2
  description -> PC-A2 (LAN Area 2)
  ip address 10.1.1.33 255.255.255.240
  no shutdown
+interface Serial0/0/0
+ description -> R1
+ ip address 10.1.1.10 255.255.255.252
+ no shutdown
 !
 ! ===== OSPF (ABR Area 0/2) =====
 router ospf 123
@@ -252,6 +263,7 @@ router ospf 123
  network 10.1.1.4 0.0.0.3 area 0
  network 10.1.1.131 0.0.0.0 area 0
  network 10.1.1.32 0.0.0.15 area 2
+ network 10.1.1.8 0.0.0.3 area 0
  passive-interface GigabitEthernet0/2
  default-information originate always
 !
@@ -375,26 +387,53 @@ router bgp 200
 
 ---
 
-## (FIX Fail-over) ligação R1–R3 por serial
+# Ponto 8 - Desafio IPv6
 
-**R1** (adicionar):
+## R1 — Cisco 1921
+
 ```
-interface Serial0/1/0
- description -> R3
- ip address 10.1.1.9 255.255.255.252
- clock rate 128000
+configure terminal
+ipv6 unicast-routing
+!
+interface FastEthernet0/0/0
+ ipv6 address 2001:690:1:1::1/64
+!
+interface Tunnel0
+ description -> Tunel IPv6 para o R3
+ ipv6 address 2001:690:1:FF::1/64
+ tunnel source Loopback0
+ tunnel destination 10.1.1.131
+ tunnel mode ipv6ip
  no shutdown
 !
-router ospf 123
- network 10.1.1.8 0.0.0.3 area 0
+ipv6 route 2001:690:1:2::/64 2001:690:1:FF::2
+!
+end
+copy running-config startup-config
 ```
-**R3** (adicionar):
+
+---
+
+## R3 — Cisco 2911
+
 ```
-interface Serial0/0/0
- description -> R1
- ip address 10.1.1.10 255.255.255.252
+configure terminal
+ipv6 unicast-routing
+!
+interface GigabitEthernet0/2
+ ipv6 address 2001:690:1:2::1/64
+!
+interface Tunnel0
+ description -> Tunel IPv6 para o R1
+ ipv6 address 2001:690:1:FF::2/64
+ tunnel source Loopback0
+ tunnel destination 10.1.1.129
+ tunnel mode ipv6ip
  no shutdown
 !
-router ospf 123
- network 10.1.1.8 0.0.0.3 area 0
+ipv6 route 2001:690:1:1::/64 2001:690:1:FF::1
+!
+end
+copy running-config startup-config
 ```
+
