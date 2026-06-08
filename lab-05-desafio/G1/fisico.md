@@ -17,7 +17,7 @@
 
 
 ## Endereçamento
-| Interface | Endereço | Máscara 
+| Interface | Endereço | Máscara |
 |---|---|---|
 |**R1**|||
 | G0/0 | 172.17.1.1 | 255.255.255.252 |
