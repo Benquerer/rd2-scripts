@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lab. #04 - Terminal</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <style>
+    #term { background:#060908; border:1px solid var(--border); border-radius:8px;
+      padding:16px; height:440px; overflow-y:auto; white-space:pre-wrap;
+      word-break:break-word; font-size:13px; }
+    #term .out { color: var(--text); }
+    #term .cmd { color: var(--blue); }
+    #term .sys { color: var(--amber); }
+    .prompt-row { display:flex; gap:10px; margin-top:14px; align-items:center; }
+    .prompt-row .ps { color: var(--green); font-weight:700; }
+    #cmd { flex:1; background:#060908; border:1px solid var(--border); }
+    .status { display:inline-block; width:8px; height:8px; border-radius:50%;
+      background:var(--red); margin-right:8px; }
+    .status.up { background:var(--green); box-shadow:0 0 8px var(--green); }
+  </style>
+</head>
+<body>
+  <header>
+    <span class="logo">RD.II | Lab. #04 - BGP<span class="blink">_</span></span>
+    <nav>
+      <a href="/">configure</a>
+      <a href="/test">connections</a>
+      <a href="/terminal" class="active">terminal</a>
+    </nav>
+  </header>
+
+  <main>
+    <h1>terminal</h1>
+    <p class="subtitle">Direct interactive SSH to any reachable router. Like PuTTY, in the browser.</p>
+
+    <div class="panel">
+      <div class="panel-title"><span class="status" id="dot"></span>session</div>
+      <div class="row">
+        <div><label>host / ip</label><input id="host" placeholder="172.100.100.11"></div>
+        <div><label>username</label><input id="user" value="admin"></div>
+        <div><label>password</label><input id="pass" type="password" value="class"></div>
+        <div><label>enable secret</label><input id="secret" type="password" placeholder="(= password)"></div>
+      </div>
+      <div class="row" style="margin-top:16px">
+        <button class="btn-primary" id="connect">connect</button>
+        <button class="btn-danger" id="disconnect" disabled>disconnect</button>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">console</div>
+      <div id="term"></div>
+      <div class="prompt-row">
+        <span class="ps">$</span>
+        <input id="cmd" placeholder="enter command…" disabled autocomplete="off">
+      </div>
+      <p class="hint">↑/↓ for history · type <code>exit</code> to close the session.</p>
+    </div>
+  </main>
+
+  <script>
+    const API = "{{ api_base }}";
+    const WS  = API.replace(/^http/, "ws") + "/ws/terminal";
+    const $ = s => document.querySelector(s);
+    const term = $("#term"), dot = $("#dot");
+    let ws = null, history = [], hi = -1;
+
+    function write(text, cls="out") {
+      const span = document.createElement("span");
+      span.className = cls; span.textContent = text;
+      term.appendChild(span); term.scrollTop = term.scrollHeight;
+    }
+
+    function setUp(up) {
+      dot.classList.toggle("up", up);
+      $("#connect").disabled = up;
+      $("#disconnect").disabled = !up;
+      $("#cmd").disabled = !up;
+      if (up) $("#cmd").focus();
+    }
+
+    $("#connect").onclick = () => {
+      const host = $("#host").value.trim();
+      if (!host) { write("\n[!] enter a host\n", "sys"); return; }
+      write(`\n[connecting to ${host}…]\n`, "sys");
+      ws = new WebSocket(WS);
+      ws.onopen = () => ws.send(JSON.stringify({
+        host, username: $("#user").value,
+        password: $("#pass").value, secret: $("#secret").value || null,
+      }));
+      ws.onmessage = e => write(e.data, "out");
+      ws.onclose = () => { write("\n[session closed]\n", "sys"); setUp(false); ws = null; };
+      ws.onerror = () => write("\n[websocket error]\n", "sys");
+      setUp(true);
+    };
+
+    $("#disconnect").onclick = () => { if (ws) ws.close(); };
+
+    $("#cmd").addEventListener("keydown", e => {
+      if (e.key === "Enter") {
+        const cmd = e.target.value;
+        if (!ws) return;
+        write("\n$ " + cmd + "\n", "cmd");
+        ws.send(cmd);
+        if (cmd.trim()) history.push(cmd);
+        hi = history.length;
+        e.target.value = "";
+      } else if (e.key === "ArrowUp") {
+        if (hi > 0) { hi--; e.target.value = history[hi]; }
+        e.preventDefault();
+      } else if (e.key === "ArrowDown") {
+        if (hi < history.length - 1) { hi++; e.target.value = history[hi]; }
+        else { hi = history.length; e.target.value = ""; }
+        e.preventDefault();
+      }
+    });
+  </script>
+</body>
+</html>
